@@ -1,5 +1,5 @@
 [package]
-name = "global"
+name = "global-static"
 description = "Lazily evaluated non-constant static items"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/JamieH01/global"

@@ -24,8 +24,8 @@
 //!offsets its allocation onto the producing closure, however types like [Vec] that require extra
 //!information would still not work with this system.
 //!
-//!You may also want statics to simply be initalized on program startup, but I'm not currently
-//!aware of a solution that would make this possible.
+//!You may also want statics to simply be initalized on program startup,
+//!which can be done with crates like ctor.
 use std::{ops::Deref, sync::OnceLock};
 
 
@@ -47,6 +47,7 @@ impl<T> Deref for SendPtr<T> {
     }
 }
 
+
 impl<T> Global<T> {
     ///Constructs a new global.
     ///Rather than a value, this function takes a closure that produces a value.
@@ -57,6 +58,26 @@ impl<T> Global<T> {
     pub const fn new(f: fn() -> T) -> Self {
         Self { f, data: OnceLock::new() }
     }
+
+    ///Initializes the contents of a global. Does nothing if already initialized.
+    pub fn init(&self) {
+        if let None = self.data.get() { 
+            let _ = unsafe { self.alloc() }; 
+        }
+    }
+
+    ///Retrieves a reference to the value inside the global without allocating.
+    ///This function will return `None` if the global has not been allocated.
+    pub fn get(&self) -> Option<&T> {
+        self.data.get().map(|ptr| {unsafe { &***ptr }})
+    }
+
+    ///Retrieves a reference to the value inside the global without allocating. Calling this function on
+    ///an unallocated global is undefined behavior.
+    pub unsafe fn get_unchecked(&self) -> &T {
+        //lol
+        &***self.data.get().unwrap_unchecked()
+    } 
     
     ///Caller must ensure cell has not been already allocated
     unsafe fn alloc(&self) -> *const T {

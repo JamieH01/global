@@ -24,5 +24,5 @@ data needs to be returned from a function on the stack. This could be fixed with
 offsets its allocation onto the producing closure, however types like `Vec` that require extra
 information would still not work with this system.
 
-You may also want statics to simply be initalized on program startup, but I'm not currently
-aware of a solution that would make this possible.
+You may also want statics to simply be initalized on program startup,
+which can be done with crates like [ctor](https://crates.io/crates/ctor).

@@ -28,6 +28,23 @@
 //!which can be done with crates like ctor.
 use std::{ops::Deref, sync::OnceLock};
 
+#[cfg(feature = "ctor")]
+pub use ctor;
+
+#[cfg(feature = "ctor")]
+#[macro_export]
+macro_rules! ctor_static {
+    ($($name:ident: $type: ty = $init:block);*;) => {
+        $(static $name: Global<$type> = Global::new(|| $init););*
+        
+        #[crate::ctor::ctor]
+        fn _global_init() {
+            $($name.init());*
+        }
+    };
+}
+
+
 
 ///Lazily evaluated static allocation.
 pub struct Global<T> {
@@ -115,4 +132,15 @@ mod tests {
         assert_eq!(TEST.add(1), 6);
         assert_eq!(*TEST, 5);
     }
+
+    #[test]
+    #[cfg(feature = "ctor")]
+    fn ctor_test() {
+        ctor_static! { 
+            THING: u32 = { 5 };
+        };
+
+        assert_eq!(THING.add(1), 6);
+        assert_eq!(*THING, 5);
+    } 
 }

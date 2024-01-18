@@ -17,12 +17,20 @@ fn main() {
     assert_eq!(*MY_NUM + 5, 10);
 }
 ```
+## ctor Feature
+If you use the `ctor` feature flag, a macro is provided to initalize a global on startup.
+```rust
+use global::ctor_static;
+
+ctor_static! {
+    static MY_NUM: i32 = { 5 };
+    static MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
+};
+
+```
 # Limitations
 The biggest limitation is the double-pointer indirection that arises from storing a type that
 itself allocates memory, such as `Vec` or `Box`. It also isn't possible to store DSTs, as the
 data needs to be returned from a function on the stack. This could be fixed with a type that
 offsets its allocation onto the producing closure, however types like `Vec` that require extra
 information would still not work with this system.
-
-You may also want statics to simply be initalized on program startup,
-which can be done with crates like [ctor](https://crates.io/crates/ctor).

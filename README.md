@@ -23,8 +23,8 @@ If you use the `ctor` feature flag, a macro is provided to initalize a global on
 use global::ctor_static;
 
 ctor_static! {
-    static MY_NUM: i32 = { 5 };
-    static MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
+    MY_NUM: i32 = { 5 };
+    MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
 };
 ```
 # Limitations

@@ -9,7 +9,7 @@
 //!produced and allocated on the heap for the lifetime of the program. Subsequent calls will return
 //!this cached value.
 //!```rust
-//!use global::Global;
+//!# use global_static::Global;
 //!
 //!static MY_NUM: Global<i32> = Global::new(|| 5);
 //!
@@ -40,56 +40,63 @@ pub use ctor;
 /// Generate a static with a ctor procedure.
 /// 
 ///```rust
-///use global::ctor_static;
+///# use global_static::ctor_static;
 ///
 ///ctor_static! {
 ///    pub MY_NUM: i32 = { 5 };
 ///    MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
 ///};
 ///```
+///This code will expand to the following:
+///```rust
+///# use global_static::*;
+///pub static MY_NUM: Global<i32> = Global::new(|| { 5 });
+///static MY_OTHER_NUM: Global<i32> = Global::new(|| { 5 });
+///
+///#[global_static::ctor::ctor]
+///fn _global_init() {
+///    MY_NUM.init();
+///    MY_OTHER_NUM.init();
+///}
+///```
 macro_rules! ctor_static {
     () => {};
     ($($body:tt)*) => {
-        ctor_gen_defs!($($body)*);
-        #[crate::ctor::ctor]
+        $crate::ctor_gen_defs!($($body)*);
+        #[$crate::ctor::ctor]
         fn _global_init() {
-            ctor_gen_inits!($($body)*);
+            $crate::ctor_gen_inits!($($body)*);
         }
     };
 }
 
-macro_rules! ctor_gen_full {
-    () => {};
-    ($($body:tt)*) => {
-        ctor_gen_defs!($($body)*);
-        #[crate::ctor::ctor]
-        fn _global_init() {
-            ctor_gen_inits!($($body)*);
-        }
-    };
-}
-
+///Internal macro. Do not use.
+#[macro_export]
+#[doc(hidden)]
 macro_rules! ctor_gen_defs {
     () => {};
     ($name:ident: $type: ty = $init:block; $($tail:tt)*) => {
-        static $name: Global<$type> = Global::new(|| $init);
-        ctor_gen_defs!($($tail)*);
+        static $name: $crate::Global<$type> = $crate::Global::new(|| $init);
+        $crate::ctor_gen_defs!($($tail)*);
     };
     (pub $name:ident: $type: ty = $init:block; $($tail:tt)*) => {
-        pub static $name: Global<$type> = Global::new(|| $init);
-        ctor_gen_defs!($($tail)*);
+        pub static $name: $crate::Global<$type> = $crate::Global::new(|| $init);
+        $crate::ctor_gen_defs!($($tail)*);
     };
 }
 
+///Internal macro. Do not use.
+#[macro_export]
+#[doc(hidden)]
 macro_rules! ctor_gen_inits {
     () => {};
     ($name:ident: $type: ty = $init:block; $($tail:tt)*) => {
         $name.init();
-        ctor_gen_inits!($($tail)*);
+        $crate::ctor_gen_inits!($($tail)*);
     };
     (pub $name:ident: $type: ty = $init:block; $($tail:tt)*) => {
         $name.init();
-        ctor_gen_inits!($($tail)*);
+        $crate::ctor_gen_inits!($($tail)*);
     };
 }
 
@@ -117,7 +124,7 @@ impl<T> Global<T> {
     ///Constructs a new global.
     ///Rather than a value, this function takes a closure that produces a value.
     ///```rust
-    ///use global::Global;
+    ///# use global_static::Global;
     ///
     ///static MY_TABLE: Global<Vec<&str>> = Global::new(|| vec!["a", "b", "c"]);
     pub const fn new(f: fn() -> T) -> Self {

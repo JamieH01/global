@@ -42,16 +42,19 @@ pub use ctor;
 ///```rust
 ///# use global_static::ctor_static;
 ///
+///fn spit_a_number() -> i32 { 42 }
+///
 ///ctor_static! {
 ///    pub MY_NUM: i32 = { 5 };
-///    MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
+///    MY_OTHER_NUM: i32 = spit_a_number;
 ///};
 ///```
 ///This code will expand to the following:
 ///```rust
 ///# use global_static::*;
+///# fn spit_a_number() -> i32 { 42 }
 ///pub static MY_NUM: Global<i32> = Global::new(|| { 5 });
-///static MY_OTHER_NUM: Global<i32> = Global::new(|| { 5 });
+///static MY_OTHER_NUM: Global<i32> = Global::new(spit_a_number);
 ///
 ///#[global_static::ctor::ctor]
 ///fn _global_init() {
@@ -83,6 +86,15 @@ macro_rules! ctor_gen_defs {
         pub static $name: $crate::Global<$type> = $crate::Global::new(|| $init);
         $crate::ctor_gen_defs!($($tail)*);
     };
+
+    ($name:ident: $type: ty = $init:expr; $($tail:tt)*) => {
+        static $name: $crate::Global<$type> = $crate::Global::new($init);
+        $crate::ctor_gen_defs!($($tail)*);
+    };
+    (pub $name:ident: $type: ty = $init:expr; $($tail:tt)*) => {
+        pub static $name: $crate::Global<$type> = $crate::Global::new($init);
+        $crate::ctor_gen_defs!($($tail)*);
+    };
 }
 
 ///Internal macro. Do not use.
@@ -95,6 +107,15 @@ macro_rules! ctor_gen_inits {
         $crate::ctor_gen_inits!($($tail)*);
     };
     (pub $name:ident: $type: ty = $init:block; $($tail:tt)*) => {
+        $name.init();
+        $crate::ctor_gen_inits!($($tail)*);
+    };
+
+    ($name:ident: $type: ty = $init:expr; $($tail:tt)*) => {
+        $name.init();
+        $crate::ctor_gen_inits!($($tail)*);
+    };
+    (pub $name:ident: $type: ty = $init:expr; $($tail:tt)*) => {
         $name.init();
         $crate::ctor_gen_inits!($($tail)*);
     };

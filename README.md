@@ -26,7 +26,6 @@ ctor_static! {
     static MY_NUM: i32 = { 5 };
     static MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
 };
-
 ```
 # Limitations
 The biggest limitation is the double-pointer indirection that arises from storing a type that

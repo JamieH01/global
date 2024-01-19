@@ -26,13 +26,27 @@
 //!
 //!You may also want statics to simply be initalized on program startup,
 //!which can be done with crates like ctor.
+#![cfg_attr(docsrs, feature(doc_cfg))]
 use std::{ops::Deref, sync::OnceLock};
 
+
+#[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
 #[cfg(feature = "ctor")]
 pub use ctor;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
 #[cfg(feature = "ctor")]
 #[macro_export]
+/// Generate a static with a ctor procedure.
+/// 
+///```rust
+///use global::ctor_static;
+///
+///ctor_static! {
+///    static MY_NUM: i32 = { 5 };
+///    static MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
+///};
+///```
 macro_rules! ctor_static {
     ($($name:ident: $type: ty = $init:block);*;) => {
         $(static $name: Global<$type> = Global::new(|| $init););*

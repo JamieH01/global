@@ -43,21 +43,55 @@ pub use ctor;
 ///use global::ctor_static;
 ///
 ///ctor_static! {
-///    static MY_NUM: i32 = { 5 };
-///    static MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
+///    pub MY_NUM: i32 = { 5 };
+///    MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
 ///};
 ///```
 macro_rules! ctor_static {
-    ($($name:ident: $type: ty = $init:block);*;) => {
-        $(static $name: Global<$type> = Global::new(|| $init););*
-        
+    () => {};
+    ($($body:tt)*) => {
+        ctor_gen_defs!($($body)*);
         #[crate::ctor::ctor]
         fn _global_init() {
-            $($name.init());*
+            ctor_gen_inits!($($body)*);
         }
     };
 }
 
+macro_rules! ctor_gen_full {
+    () => {};
+    ($($body:tt)*) => {
+        ctor_gen_defs!($($body)*);
+        #[crate::ctor::ctor]
+        fn _global_init() {
+            ctor_gen_inits!($($body)*);
+        }
+    };
+}
+
+macro_rules! ctor_gen_defs {
+    () => {};
+    ($name:ident: $type: ty = $init:block; $($tail:tt)*) => {
+        static $name: Global<$type> = Global::new(|| $init);
+        ctor_gen_defs!($($tail)*);
+    };
+    (pub $name:ident: $type: ty = $init:block; $($tail:tt)*) => {
+        pub static $name: Global<$type> = Global::new(|| $init);
+        ctor_gen_defs!($($tail)*);
+    };
+}
+
+macro_rules! ctor_gen_inits {
+    () => {};
+    ($name:ident: $type: ty = $init:block; $($tail:tt)*) => {
+        $name.init();
+        ctor_gen_inits!($($tail)*);
+    };
+    (pub $name:ident: $type: ty = $init:block; $($tail:tt)*) => {
+        $name.init();
+        ctor_gen_inits!($($tail)*);
+    };
+}
 
 
 ///Lazily evaluated static allocation.
@@ -152,6 +186,7 @@ mod tests {
     fn ctor_test() {
         ctor_static! { 
             THING: u32 = { 5 };
+            pub THING2: u32 = { 5 };
         };
 
         assert_eq!(THING.add(1), 6);

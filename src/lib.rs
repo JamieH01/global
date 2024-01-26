@@ -41,12 +41,12 @@ pub use ctor;
 /// 
 ///```rust
 ///# use global_static::ctor_static;
-///
 ///fn spit_a_number() -> i32 { 42 }
 ///
 ///ctor_static! {
 ///    pub MY_NUM: i32 = { 5 };
 ///    MY_OTHER_NUM: i32 = spit_a_number;
+///    pub default DEFAULT_NUM: i32;
 ///};
 ///```
 ///This code will expand to the following:
@@ -55,11 +55,13 @@ pub use ctor;
 ///# fn spit_a_number() -> i32 { 42 }
 ///pub static MY_NUM: Global<i32> = Global::new(|| { 5 });
 ///static MY_OTHER_NUM: Global<i32> = Global::new(spit_a_number);
+///pub static DEFAULT_NUM: Global<i32> = Global::default();
 ///
 ///#[global_static::ctor::ctor]
 ///fn _global_init() {
 ///    MY_NUM.init();
 ///    MY_OTHER_NUM.init();
+///    DEFAULT_NUM.init();
 ///}
 ///```
 macro_rules! ctor_static {
@@ -78,6 +80,7 @@ macro_rules! ctor_static {
 #[doc(hidden)]
 macro_rules! ctor_gen_defs {
     () => {};
+
     ($name:ident: $type: ty = $init:block; $($tail:tt)*) => {
         static $name: $crate::Global<$type> = $crate::Global::new(|| $init);
         $crate::ctor_gen_defs!($($tail)*);
@@ -95,6 +98,16 @@ macro_rules! ctor_gen_defs {
         pub static $name: $crate::Global<$type> = $crate::Global::new($init);
         $crate::ctor_gen_defs!($($tail)*);
     };
+
+    (default $name:ident: $type: ty; $($tail:tt)*) => {
+        static $name: $crate::Global<$type> = $crate::Global::default();
+        $crate::ctor_gen_defs!($($tail)*);
+    };
+    (pub default $name:ident: $type: ty; $($tail:tt)*) => {
+        pub static $name: $crate::Global<$type> = $crate::Global::default();
+        $crate::ctor_gen_defs!($($tail)*);
+    };
+
 }
 
 ///Internal macro. Do not use.
@@ -116,6 +129,15 @@ macro_rules! ctor_gen_inits {
         $crate::ctor_gen_inits!($($tail)*);
     };
     (pub $name:ident: $type: ty = $init:expr; $($tail:tt)*) => {
+        $name.init();
+        $crate::ctor_gen_inits!($($tail)*);
+    };
+
+    (default $name:ident: $type: ty; $($tail:tt)*) => {
+        $name.init();
+        $crate::ctor_gen_inits!($($tail)*);
+    };
+    (pub default $name:ident: $type: ty; $($tail:tt)*) => {
         $name.init();
         $crate::ctor_gen_inits!($($tail)*);
     };
@@ -183,6 +205,13 @@ impl<T> Global<T> {
     }
 }
 
+impl<T: Default> Global<T> {
+    ///Constructs a new global, using the [`Default`] implementation for `T` as the initializer.
+    //cant use trait cus not const
+    pub const fn default() -> Self {
+        Self::new(T::default)
+    } 
+}
 
 impl<T> Deref for Global<T> {
     type Target = T;
@@ -194,6 +223,7 @@ impl<T> Deref for Global<T> {
         }
     }
 }
+
 
 static TEST: Global<u8> = Global::new(|| 5);
 

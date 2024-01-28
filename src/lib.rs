@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
-use std::{ops::Deref, sync::OnceLock};
+use std::{ops::Deref, sync::OnceLock, fmt::{Debug, Display}};
 
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
@@ -198,6 +198,16 @@ impl<T> Deref for Global<T> {
     }
 }
 
+impl<T: Debug> Debug for Global<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{:?}", self.deref())
+    }
+}
+impl<T: Display> Display for Global<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "{}", self.deref())
+    }
+}
 
 static TEST: Global<u8> = Global::new(|| 5);
 

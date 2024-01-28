@@ -6,7 +6,16 @@ use std::{ops::Deref, sync::OnceLock, fmt::{Debug, Display}};
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
 #[cfg(feature = "ctor")]
+#[cfg(feature = "singleton")]
 pub use ctor;
+
+#[cfg(feature = "singleton")]
+extern crate singleton;
+
+#[cfg_attr(docsrs, doc(cfg(feature = "singleton")))]
+#[cfg(feature = "singleton")]
+pub use singleton::*;
+
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
 #[cfg(feature = "ctor")]
@@ -209,13 +218,13 @@ impl<T: Display> Display for Global<T> {
     }
 }
 
-static TEST: Global<u8> = Global::new(|| 5);
 
 #[cfg(test)]
 mod tests {
     use std::ops::Add;
 
     use super::*;
+    static TEST: super::Global<u8> = super::Global::new(|| 5);
 
     #[test]
     fn it_works() {
@@ -234,4 +243,19 @@ mod tests {
         assert_eq!(THING.add(1), 6);
         assert_eq!(*THING, 5);
     } 
+
+    #[test]
+    #[cfg(feature = "singleton")]
+    fn singleton_attr() {
+        use crate as global_static;
+        #[singleton]
+        struct Thing {
+            data: String,
+        }
+
+        impl Default for Thing {
+            fn default() -> Self { Thing { data: "hello!".to_owned() }}
+        }
+        assert!(THING.get().is_some());
+    }
 }

@@ -9,7 +9,7 @@ immutable non-constant statics.
 produced and allocated on the heap for the lifetime of the program. Subsequent calls will return
 this cached value.
 ```rust
-use global::Global;
+use global_static::Global;
 
 static MY_NUM: Global<i32> = Global::new(|| 5);
 
@@ -20,13 +20,40 @@ fn main() {
 ## ctor Feature
 If you use the `ctor` feature flag, a macro is provided to initalize a global on startup.
 ```rust
-use global::ctor_static;
+use global_static::ctor_static;
 
 ctor_static! {
     MY_NUM: i32 = { 5 };
     MY_OTHER_NUM: i32 = { *MY_NUM * 2 };
 };
 ```
+
+## singleton Feature
+Most usecases for `Global` involve a struct that is parsed and then placed in a static like so:
+```ignore
+use global_static::Global;
+pub static CONFIG: Global<Config> = Global::new(Default::default);
+
+pub struct Config {
+    name: String
+}
+
+impl Default for Config {
+    fn default() -> Self { /* implementation */ }
+}
+```
+The `singleton` attribute generates a static item for a given struct.
+```ignore
+use global_static::singleton;
+#[singleton] //generates the CONFIG static
+pub struct Config {
+    name: String
+}
+impl Default for Config {
+    fn default() -> Self { /* implementation */ }
+}
+```
+
 # Limitations
 The biggest limitation is the double-pointer indirection that arises from storing a type that
 itself allocates memory, such as `Vec` or `Box`. It also isn't possible to store DSTs, as the

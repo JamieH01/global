@@ -1,9 +1,10 @@
+workspace = { members = ["singleton"] }
 [package]
 name = "global-static"
 description = "Lazily evaluated non-constant static items"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/JamieH01/global"
-version = "0.3.1"
+version = "0.4.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -17,3 +18,4 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 ctor = { version = "0.2.6", optional = true }
+singleton = { path = "./singleton", optional = true }

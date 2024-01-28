@@ -200,12 +200,12 @@ impl<T> Deref for Global<T> {
 
 impl<T: Debug> Debug for Global<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{:?}", self.deref())
+        write!(f, "{:?}", self.deref())
     }
 }
 impl<T: Display> Display for Global<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", self.deref())
+        write!(f, "{}", self.deref())
     }
 }
 

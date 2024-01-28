@@ -19,4 +19,4 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 ctor = { version = "0.2.6", optional = true }
-singleton = { version = "0.1.0", path = "./singleton", optional = true }
+singleton = { package = "global-static-singleton", version = "0.1.0", path = "./singleton", optional = true }

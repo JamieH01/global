@@ -1,5 +1,5 @@
 [package]
-name = "singleton"
+name = "global-static-singleton"
 version = "0.1.0"
 edition = "2021"
 description = "global-static macro sister crate"

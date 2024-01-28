@@ -245,14 +245,16 @@ mod tests {
     #[cfg(feature = "singleton")]
     fn singleton_attr() {
         use crate as global_static;
-        #[singleton]
+        #[singleton(|| Thing::new("hai!"))]
         struct Thing {
             data: String,
         }
-
-        impl Default for Thing {
-            fn default() -> Self { Thing { data: "hello!".to_owned() }}
+        impl Thing {
+            pub fn new(str: &str) -> Self {
+                Self { data: str.to_owned() }
+            }
         }
+
         assert!(THING.get().is_some());
     }
 }

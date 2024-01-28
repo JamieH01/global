@@ -14,10 +14,14 @@ use syn::{parse_macro_input, ItemStruct, Expr};
 ///#[singleton(|| MyType::new())] //closures work too
 pub fn singleton(attr: pm::TokenStream, item: pm::TokenStream) -> pm::TokenStream {
     let data = parse_macro_input!(item as ItemStruct);
-    let attr_expr = syn::parse::<Expr>(attr);
+    let attr_expr = syn::parse::<Expr>(attr.clone());
 
     let default = syn::parse::<Expr>(quote! { Default::default }.into()).unwrap();
-    let expr = attr_expr.unwrap_or(default);
+    let expr = match attr_expr {
+        Ok(tree) => tree,
+        Err(_) if attr.is_empty() => default,
+        Err(e) => return quote! {compile_error!(e.to_string())}.into(),
+    };
 
     let struct_name = &data.ident;
     let static_name = syn::Ident::new(&struct_name.to_string().to_uppercase(), struct_name.span());
@@ -39,3 +43,4 @@ pub fn singleton(attr: pm::TokenStream, item: pm::TokenStream) -> pm::TokenStrea
 
     out.into() 
 }
+

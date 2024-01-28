@@ -30,7 +30,7 @@ ctor_static! {
 
 ## singleton Feature
 Most usecases for `Global` involve a struct that is parsed and then placed in a static like so:
-```ignore
+```rust,ignore
 use global_static::Global;
 pub static CONFIG: Global<Config> = Global::new(Default::default);
 
@@ -43,7 +43,7 @@ impl Default for Config {
 }
 ```
 The `singleton` attribute generates a static item for a given struct.
-```ignore
+```rust,ignore
 use global_static::singleton;
 #[singleton] //generates the CONFIG static
 pub struct Config {

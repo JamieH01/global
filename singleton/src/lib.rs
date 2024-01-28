@@ -5,6 +5,7 @@ use quote::quote;
 use syn::{parse_macro_input, ItemStruct};
 
 #[proc_macro_attribute]
+///Generate a ctor static based using the [`Default`] implementation.
 pub fn singleton(_attr: pm::TokenStream, item: pm::TokenStream) -> pm::TokenStream {
     let data = parse_macro_input!(item as ItemStruct);
 

@@ -6,11 +6,8 @@ use std::{ops::Deref, sync::OnceLock, fmt::{Debug, Display}};
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
 #[cfg(feature = "ctor")]
-#[cfg(feature = "singleton")]
 pub use ctor;
 
-#[cfg(feature = "singleton")]
-extern crate singleton;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "singleton")))]
 #[cfg(feature = "singleton")]

@@ -256,5 +256,14 @@ mod tests {
         }
 
         assert!(THING.get().is_some());
+
+        #[singleton_fn]
+        #[singleton_fn(MY_THING)]
+        fn make_thing() -> Thing {
+            Thing::new("haaai")
+        }
+
+        assert!(MAKE_THING.get().is_some());
+        assert!(MY_THING.get().is_some());
     }
 }

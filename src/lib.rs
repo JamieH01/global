@@ -11,7 +11,7 @@ pub use ctor;
 
 #[cfg_attr(docsrs, doc(cfg(feature = "singleton")))]
 #[cfg(feature = "singleton")]
-pub use singleton::*;
+pub use singleton::{singleton, singleton_fn};
 
 
 #[cfg_attr(docsrs, doc(cfg(feature = "ctor")))]
